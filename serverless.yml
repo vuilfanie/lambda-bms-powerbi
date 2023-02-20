@@ -1,8 +1,11 @@
-service: streaming-bms
+service: streamingbms
+
+# configValidationMode: off
+
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs16.x
   stage: prod
   region: us-east-1
   memorySize: 128
@@ -13,7 +16,7 @@ functions:
 
     events:
       - schedule: 
-        rate: rate(15 minutes)
-        enabled: true
+          rate: rate(15 minutes)
+          enabled: true
 
     # environment: ${file(env.yml)}

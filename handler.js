@@ -3,14 +3,14 @@
 const rp = require('request-promise');
 const _ = require('lodash');
 
-const BMS_API_USERNAME = process.env.BMS_API_USERNAME;
-const BMS_API_PASSWORD = process.env.BMS_API_PASSWORD;
-const BMS_API_SERVER = process.env.BMS_API_SERVER ? process.env.BMS_API_SERVER : 'https://bms.kaseya.com'
-const BMS_API_TENANT = process.env.BMS_API_TENANT;
+const BMS_API_USERNAME = "";
+const BMS_API_PASSWORD = "";
+const BMS_API_SERVER = process.env.BMS_API_SERVER ? process.env.BMS_API_SERVER : 'https://api.bmsemea.kaseya.com'
+const BMS_API_TENANT = "";
 const BMS_API_TOP = process.env.BMS_API_TOP ? process.env.BMS_API_TOP : "15";
-const POWERBI_API = process.env.POWERBI_API;
+const POWERBI_API = "";
 
-global.access_token = '';
+global.accessToken = '';
 
 function web_call(method, url, payload) {
   return new Promise(function (resolve, reject) {
@@ -18,8 +18,8 @@ function web_call(method, url, payload) {
       method: method,
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + access_token
+        'Content-Type': 'multipart/form-data',
+        'Authorization': 'Bearer ' + accessToken
       },
       json: true
     }
@@ -31,13 +31,13 @@ function web_call(method, url, payload) {
       Object.assign(opt, { uri: url });
     }
 
-    if (url.indexOf("/api/token" >= 0)) {
+    if (url.indexOf("/v2/security/authenticate" >= 0)) {
       Object.assign(opt, { form: payload });
     } else {
       Object.assign(opt, { body: payload });
     }
 
-    if (access_token == '') { 
+    if (accessToken == '') { 
       delete opt.headers['Content-Type'];
       delete opt.headers['Authorization'];
     }
@@ -57,19 +57,19 @@ function login() {
   return new Promise(function (resolve, reject) {
     const login_Promise = web_call(
       "POST",
-      "/api/token",
+      "/v2/security/authenticate",
       {
-        username: BMS_API_USERNAME,
-        password: BMS_API_PASSWORD,
-        grant_type: "password",
-        tenant: BMS_API_TENANT
+        UserName: BMS_API_USERNAME,
+        Password: BMS_API_PASSWORD,
+        GrantType: "password",
+        Tenant: BMS_API_TENANT
       }
     );
 
     login_Promise.then(function (res) {
-      access_token = res.access_token;
-      console.log('login(): access token received -> ', access_token);
-      resolve(access_token);
+      accessToken = res.accessToken;
+      console.log('login(): access token received -> ', accessToken);
+      resolve(accessToken);
     }).catch(function (err) {
       console.log('login(): FAIL: ', err);
       reject(false);
@@ -81,7 +81,7 @@ function getTickets() {
   return new Promise(function (resolve, reject) {
     const getTicket_Promise = web_call(
       "GET",
-      "/api/servicedesk/tickets?$orderby=Id desc&$top=" + BMS_API_TOP,
+      "/v2/servicedesk/tickets?$orderby=id desc&$top=" + BMS_API_TOP,
       {}
     );
 
@@ -90,31 +90,10 @@ function getTickets() {
       console.log('getTickets(): received payload, no. of results: ', ticket_payload.TotalRecords);
 
       var reduced_payload = _.map(ticket_payload.Result, function(object) {
-        return _.pick(object, ['AccountName', 'DueDate', 'LastActivityUpdate', 'OpenDate', 'Queue', 'Status', 'TicketNumber', 'Title']);
+        return _.pick(object, ['accountName', 'dueDate', 'lastActivityUpdate', 'openDate', 'queueName', 'statusName', 'ticketNumber', 'title']);
       });
 
       var ticketPromises = [];
-
-      // _.forEach(reduced_payload, function(v) {
-      //   // don't set json: true or it'll override encoding: null
-      //   var opt = {
-      //     method: "POST",
-      //     uri: POWERBI_API,
-      //     json: v
-      //   }
-
-      //   ticketPromises.push(
-      //     rp(opt)
-      //     .then(function(res) {
-      //       console.log(`${v.TicketNumber}: ${res.statusCode}`);
-      //       resolve('Success');
-      //     }).catch(function (res) {
-      //       console.log(`${v.TicketNumber}: ${res.statusCode}`);
-      //       console.log(res);
-      //       reject(res);
-      //     })
-      //   );
-      // });
 
       var opt = {
         method: "POST",
@@ -150,7 +129,7 @@ module.exports.getBMStickets = async (event) => {
 
     login()
     .then((token) => {
-      access_token = token;
+      accessToken = token;
 
       getTickets()
       .then((res) => {
