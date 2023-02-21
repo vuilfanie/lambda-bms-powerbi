@@ -67,11 +67,10 @@ for i in account_names:
         continue
 
     ticket_num = i['id']
-    str(ticket_num)
-    # sort_params = {
-    # "id": ticket_num
-    # }
-    g = requests.get('https://api.bmsemea.kaseya.com/v2/servicedesk/tickets/' + ticket_num + '/slainfo', params=sort_params, headers=get_headers)
+    sort_params = {
+    "id": ticket_num
+    }
+    g = requests.get('https://api.bmsemea.kaseya.com/v2/servicedesk/tickets/' + str(ticket_num) + '/slainfo', params=sort_params, headers=get_headers)
     get_dict = g.json()
     sla_info = get_dict['result']
 
