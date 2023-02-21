@@ -1,6 +1,9 @@
 import json
 import requests
 import logging
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 try:
     import http.client as http_client
@@ -20,10 +23,10 @@ headers = {
 }
 
 params = {
-  "UserName": "user",
-  "Password": "pass",
-  "Tenant": "company",
-  "GrantType": "password"
+  "UserName": os.getenv('user'),
+  "Password": os.getenv('pass'),
+  "Tenant": os.getenv('tenant'),
+  "GrantType": os.getenv('grantType')
 }
 
 r = requests.post("https://api.bmsemea.kaseya.com/v2/security/authenticate",  data=params, headers=headers)
@@ -58,7 +61,7 @@ for i in account_names:
     'slaStatusEventId': i['slaStatusEventId']}
 
     try:
-        requests.post("powerbiurl", json=dictionary, headers=post_headers)
+        requests.post(os.getenv('powerBi_API'), json=dictionary, headers=post_headers)
     except Exception as e:
         print(e)
         continue
@@ -81,7 +84,7 @@ for i in account_names:
 
 for item in data:
     try:
-        requests.post("powerbiurl", json=item, headers=post_headers)
+        requests.post(os.getenv('powerBi_API'), json=item, headers=post_headers)
     except Exception as e:
         print(e)
         continue
