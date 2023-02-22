@@ -51,6 +51,8 @@ post_headers = {
 }
 
 
-for i in sla_info:
-    dictionary = [{'respondGoal': 0['respondGoal']}]
-    requests.post(os.getenv('powerBi_API'), json=dictionary, headers=post_headers)
+if sla_info:
+  dictionary = [{'respondGoal': sla_info['respondGoal'], 'respondActual': sla_info['respondActual'], 'respondRemaining': sla_info['respondRemaining'], 'resolveGoal': sla_info['resolveGoal'], 
+        'resolveActual': sla_info['resolveActual'], 'resolveRemaining': sla_info['resolveRemaining'], 'waitingActual': sla_info['waitingActual'], 'reopenActual': sla_info['reopenActual'], 
+        'timeTotalGoal': sla_info['timeTotalGoal'], 'timeTotalActual': sla_info['timeTotalActual'], 'timeTotalRemaining': sla_info['timeTotalRemaining'], 'ticketPriorityColor': sla_info['ticketPriorityColor']}]
+  requests.post(os.getenv('powerBi_API'), json=dictionary, headers=post_headers)
